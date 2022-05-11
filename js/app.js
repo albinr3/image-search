@@ -2,6 +2,7 @@
 
 const form = document.querySelector("#formulario");
 const result = document.querySelector("#resultado");
+const pagination = document.querySelector("#paginacion");
 
 const word = document.querySelector("#termino");
 const searchBtn = document.querySelector("#btn");
@@ -9,6 +10,7 @@ const searchBtn = document.querySelector("#btn");
 const imagesPerPage = 40;
 let pagesTotal;
 let iterator;
+let actualPage = 1;
 
 
 window.onload = () => {
@@ -50,12 +52,13 @@ function showAlert(message) {
 
 function searchImage(word) {
     const key = "14258319-b0a1e6f9151944a09d2cea303";
-    const url = `https://pixabay.com/api/?key=${key}&q=${word}&image_type=photo&pretty=true`;
+    const url = `https://pixabay.com/api/?key=${key}&q=${word}&image_type=photo&pretty=true&per_page=${imagesPerPage}&page=${actualPage}`;
 
     fetch(url)
         .then(response => response.json())
         .then( result => {
             pagesTotal = calcPages(result.totalHits)
+            console.log(pagesTotal);
             showHtml(result.hits);
         });
     
@@ -63,7 +66,7 @@ function searchImage(word) {
 
 function showHtml(imageArray) {
     console.log(imageArray);
-    clearHtml();
+    clearHtml(result);
 
     //iterate over the picture array
     imageArray.forEach(image => {
@@ -72,14 +75,14 @@ function showHtml(imageArray) {
         result.innerHTML += `
         <div class="w-1/2 md:w-1/3 lg:w-1/4 p-3 mb-4">
             <div class="bg-white">
-                <img class="w-full" src="${previewURL}">
+                <a href="${largeImageURL}" target="_blank" rel="noopener noreferrer"><img class="w-full" src="${previewURL}"></a>
 
                 <div class="p-4" id="div-info">
                     
                     <p class="font-bold"> ${likes} <span class="font-light">Likes</span> </p>
                     <p class="font-bold"> ${views} <span class="font-light">Views</span> </p>
 
-                    <a class="w-full bg-blue-800 hover:bg-blue text-white uppercase font-bold rounded mt-5 p-1" href="${largeImageURL}" target="_blank" rel="noopener noreferrer">
+                    <a class="block w-full bg-blue-800 hover:bg-blue text-white uppercase font-bold rounded mt-5 p-1" href="${largeImageURL}" target="_blank" rel="noopener noreferrer">
                     Watch full Image
                     </a>
                 </div>
@@ -88,14 +91,16 @@ function showHtml(imageArray) {
         `
     })
 
-    iterator = createPaginator(pagesTotal);
-    console.log(iterator.next());
-    console.log(iterator.next());
+    //we clear the previus pagination
+    clearHtml(pagination);
+
+    //we create the new paginator html
+    printPaginator();
 }
 
-function clearHtml() {
-    while(result.firstChild) {
-        result.removeChild(result.firstChild);
+function clearHtml(div) {
+    while(div.firstChild) {
+        div.removeChild(div.firstChild);
     };
 }
 
@@ -111,6 +116,31 @@ function *createPaginator(total) {
     }
 
 }
+
+
+function printPaginator() {
+    iterator = createPaginator(pagesTotal);
+    while(true) {
+        const {value, done} = iterator.next();
+        if(done) {
+            return;
+        } else {
+            //create a botton for each element in the generator
+            const botton = document.createElement("a");
+            botton.href = "#";
+            botton.textContent = value;
+            botton.dataset.page = value;
+            botton.classList.add("siguiente", "bg-yellow-400", "px-4", "mb-4", "py-1", "mr-2", "font-bold", "md-10", "rounded");
+            botton.onclick = () => {
+                actualPage = value;
+                searchImage(word.value);
+            }
+
+            pagination.appendChild(botton);
+        }
+    }
+}
+
 
 // function *range(start, end) {
 //     for (let i = start; i <= end; i++) {
