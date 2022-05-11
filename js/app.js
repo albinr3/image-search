@@ -6,6 +6,10 @@ const result = document.querySelector("#resultado");
 const word = document.querySelector("#termino");
 const searchBtn = document.querySelector("#btn");
 
+const imagesPerPage = 40;
+let pagesTotal;
+let iterator;
+
 
 window.onload = () => {
     form.addEventListener("submit", validation);
@@ -50,7 +54,10 @@ function searchImage(word) {
 
     fetch(url)
         .then(response => response.json())
-        .then( result => showHtml(result.hits));
+        .then( result => {
+            pagesTotal = calcPages(result.totalHits)
+            showHtml(result.hits);
+        });
     
 }
 
@@ -80,6 +87,10 @@ function showHtml(imageArray) {
         </div>
         `
     })
+
+    iterator = createPaginator(pagesTotal);
+    console.log(iterator.next());
+    console.log(iterator.next());
 }
 
 function clearHtml() {
@@ -87,3 +98,22 @@ function clearHtml() {
         result.removeChild(result.firstChild);
     };
 }
+
+function calcPages(total) {
+    return Math.ceil(total/imagesPerPage)
+}
+
+//generator it is going to register the quantity of elements depending of the pages
+
+function *createPaginator(total) {
+    for(let i=1; i<=total; i++) {
+        yield i;
+    }
+
+}
+
+// function *range(start, end) {
+//     for (let i = start; i <= end; i++) {
+//         yield i;
+//     }
+// }
