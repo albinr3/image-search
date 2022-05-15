@@ -50,22 +50,32 @@ function showAlert(message) {
     }
 }
 
-function searchImage(word) {
-    const key = "14258319-b0a1e6f9151944a09d2cea303";
+async function searchImage(word) {
+    const key = "14258319-b0a1e6f9151944a09d2cea303m";
     const url = `https://pixabay.com/api/?key=${key}&q=${word}&image_type=photo&pretty=true&per_page=${imagesPerPage}&page=${actualPage}`;
 
-    fetch(url)
-        .then(response => response.json())
-        .then( result => {
-            pagesTotal = calcPages(result.totalHits)
-            console.log(pagesTotal);
-            showHtml(result.hits);
-        });
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+
+        pagesTotal = calcPages(result.totalHits)
+
+        //check if there is not results
+        if(pagesTotal === 0) {
+            showAlert("There is not images with that name!");
+            return;
+        }
+        
+        showHtml(result.hits);
+
+    } catch (error) {
+        console.log(error);
+    }
     
 }
 
 function showHtml(imageArray) {
-    console.log(imageArray);
+    
     clearHtml(result);
 
     //iterate over the picture array
